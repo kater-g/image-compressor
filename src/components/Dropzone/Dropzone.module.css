@@ -1,0 +1,62 @@
+.dropzone {
+  width: 100%;
+}
+
+.dropzone__button {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 160px;
+  padding: 24px;
+  border: 2px dashed var(--text);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropzone__button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.dropzone__title {
+  font-weight: 600;
+}
+
+.dropzone__action {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dropzone__hint {
+  margin: 12px 0 0;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.dropzone__error {
+  min-height: 1.5em;
+  margin: 8px 0 0;
+  color: var(--text-h);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.dropzone--over .dropzone__button {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.dropzone--disabled .dropzone__button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
