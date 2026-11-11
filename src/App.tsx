@@ -1,122 +1,231 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useRef, useState } from "react";
+import { Dropzone } from "./components/Dropzone/Dropzone";
+import { Preview } from "./components/Preview/Preview";
+import { compressImage, CompressImageError } from "./lib/compressImage";
+import type { CompressResult, OutputFormat } from "./lib/compressImage";
+import { formatBytes } from "./lib/formatBytes";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+type SourceImage = { file: File; url: string };
+type ProcessedImage = { data: CompressResult; url: string; filename: string };
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+const EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function getResultMessage(result: CompressResult): string {
+  if (result.returnedOriginal) {
+    return "Новый файл не стал меньше. Можно скачать оригинал.";
+  }
+  if (result.compressed) {
+    const saved = result.originalSize - result.outputSize;
+    const percent = ((saved / result.originalSize) * 100).toFixed(1);
+    return `Готово. Файл меньше на ${formatBytes(saved)} (${percent}%).`;
+  }
+  return result.outputSize > result.originalSize
+    ? "Преобразование выполнено. Итоговый файл больше исходного."
+    : "Преобразование выполнено. Размер файла не изменился.";
 }
 
-export default App
+export default function App() {
+  const [source, setSource] = useState<SourceImage | null>(null);
+  const [result, setResult] = useState<ProcessedImage | null>(null);
+  const [format, setFormat] = useState<OutputFormat>("image/webp");
+  const [quality, setQuality] = useState(80);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
+  const requestId = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      if (source) URL.revokeObjectURL(source.url);
+    };
+  }, [source]);
+
+  useEffect(() => {
+    if (!source) return;
+
+    let cancelled = false;
+    let previewUrl: string | undefined;
+    const currentRequest = requestId.current;
+    const isCurrentRequest = () =>
+      !cancelled && currentRequest === requestId.current;
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const data = await compressImage(source.file, {
+          mimeType: format,
+          quality: quality / 100,
+          maxWidth: 1920,
+          maxHeight: 1920,
+        });
+
+        if (!isCurrentRequest()) return;
+
+        const baseName = source.file.name.replace(/\.[^.]+$/, "") || "image";
+        const filename = data.returnedOriginal
+          ? source.file.name
+          : `${baseName}-processed.${EXTENSIONS[data.mimeType]}`;
+
+        previewUrl = URL.createObjectURL(data.blob);
+        setResult({ data, url: previewUrl, filename });
+      } catch (cause) {
+        if (!isCurrentRequest()) return;
+        setError(
+          cause instanceof CompressImageError
+            ? cause.message
+            : "Не удалось обработать изображение. Попробуйте ещё раз.",
+        );
+      } finally {
+        if (isCurrentRequest()) setIsProcessing(false);
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [source, format, quality, retryKey]);
+
+  function invalidatePreview(hasSource: boolean) {
+    requestId.current += 1;
+    setResult(null);
+    setError("");
+    setIsProcessing(hasSource);
+  }
+
+  function handleFileSelect(file: File) {
+    invalidatePreview(true);
+    setSource({ file, url: URL.createObjectURL(file) });
+  }
+
+  function handleFormatChange(nextFormat: OutputFormat) {
+    if (nextFormat === format) return;
+    invalidatePreview(source !== null);
+    setFormat(nextFormat);
+  }
+
+  function handleQualityChange(nextQuality: number) {
+    if (nextQuality === quality) return;
+    invalidatePreview(source !== null);
+    setQuality(nextQuality);
+  }
+
+  function handleRetry() {
+    invalidatePreview(source !== null);
+    setRetryKey((value) => value + 1);
+  }
+
+  return (
+    <main className="app">
+      <header className="app__header">
+        <h1 className="app__title">Сжать изображение</h1>
+        <p className="app__intro">
+          Выберите изображение и настройте формат. Предпросмотр и размер файла
+          обновятся автоматически. Всё обрабатывается в вашем браузере.
+        </p>
+      </header>
+
+      <div className="app__workspace">
+        <div className="app__sidebar">
+          <Dropzone onFile={handleFileSelect} />
+
+          {source && (
+            <p className="app__selection">
+              {source.file.name} · {formatBytes(source.file.size)}
+            </p>
+          )}
+
+          <fieldset className="app__settings">
+            <legend className="app__legend">Параметры изображения</legend>
+            <div className="app__controls">
+              <div className="app__field">
+                <label className="app__label" htmlFor="output-format">
+                  Формат результата
+                </label>
+                <select
+                  id="output-format"
+                  className="app__select"
+                  value={format}
+                  aria-describedby="format-hint"
+                  onChange={(event) =>
+                    handleFormatChange(
+                      event.currentTarget.value as OutputFormat,
+                    )
+                  }
+                >
+                  <option value="image/webp">WebP</option>
+                  <option value="image/jpeg">JPEG</option>
+                  <option value="image/png">PNG</option>
+                </select>
+                <p id="format-hint" className="app__hint">
+                  {format === "image/jpeg"
+                    ? "Прозрачные области станут белыми."
+                    : format === "image/png"
+                      ? "Без потерь. Вес файла может увеличиться."
+                      : "Поддерживает прозрачный фон."}
+                </p>
+              </div>
+
+              {format !== "image/png" && (
+                <div className="app__field">
+                  <label className="app__label" htmlFor="image-quality">
+                    Качество: {quality}%
+                  </label>
+                  <input
+                    id="image-quality"
+                    className="app__range"
+                    type="range"
+                    min="10"
+                    max="100"
+                    step="1"
+                    value={quality}
+                    aria-valuetext={`${quality}%`}
+                    aria-describedby="quality-hint"
+                    onChange={(event) =>
+                      handleQualityChange(event.currentTarget.valueAsNumber)
+                    }
+                  />
+                  <p id="quality-hint" className="app__hint">
+                    Ниже качество — обычно меньше файл.
+                  </p>
+                </div>
+              )}
+            </div>
+            <p className="app__hint">
+              Изображение впишется в 1920 × 1920 пикселей без увеличения.
+              Анимация не сохраняется.
+            </p>
+          </fieldset>
+
+          <p className="app__status" role="status">
+            {isProcessing
+              ? "Обновляем предпросмотр и рассчитываем размер…"
+              : result
+                ? getResultMessage(result.data)
+                : ""}
+          </p>
+          <p className="app__error" role="alert">
+            {error}
+          </p>
+          {error && (
+            <button className="app__retry" type="button" onClick={handleRetry}>
+              Повторить обработку
+            </button>
+          )}
+        </div>
+
+        <Preview
+          source={source}
+          result={result}
+          isProcessing={isProcessing}
+          error={error}
+        />
+      </div>
+    </main>
+  );
+}
