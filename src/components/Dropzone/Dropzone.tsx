@@ -115,13 +115,15 @@ export function Dropzone({ onFile, disabled = false }: DropzoneProps) {
         </span>
       </button>
 
-      <p id={id + "-hint"} className={styles.dropzone__hint}>
-        JPEG, PNG или WebP. Одно изображение за раз.
-      </p>
+      <div className={styles.dropzone__messages}>
+        <p id={id + "-hint"} className={styles.dropzone__hint}>
+          JPEG, PNG или WebP. Одно изображение за раз.
+        </p>
 
-      <p id={id + "-error"} className={styles.dropzone__error} role="alert">
-        {error}
-      </p>
+        <p id={id + "-error"} className={styles.dropzone__error} role="alert">
+          {error}
+        </p>
+      </div>
     </div>
   );
 }

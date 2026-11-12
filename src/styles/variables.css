@@ -1,0 +1,114 @@
+:root {
+  /* Цвета светлой темы */
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #d6d2dc;
+  --surface: #f6f4f8;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --action: #6d28d9;
+  --action-hover: #5b21b6;
+  --action-text: #fff;
+  --error: #b42318;
+
+  /* Шкала отступов */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-14: 3.5rem;
+  --space-16: 4rem;
+
+  /* Типографика */
+  --font-family-base: system-ui, "Segoe UI", sans-serif;
+  --font-size-root: 100%;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-heading: 1.25rem;
+  --font-size-title: clamp(2rem, 5vw, 3rem);
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-base: 1.5;
+  --line-height-heading: 1.2;
+  --letter-spacing-title: -0.03em;
+  --text-measure: 70ch;
+
+  /* Общие отступы */
+  --gap-layout: var(--space-8);
+  --gap-section: var(--space-6);
+  --gap-content: var(--space-4);
+  --gap-field: var(--space-2);
+  --gap-caption: var(--space-3);
+
+  /* Границы, фокус и состояния */
+  --border-width: 1px;
+  --border-width-strong: 2px;
+  --radius-control: 0.5rem;
+  --focus-width: 3px;
+  --focus-offset: var(--space-1);
+  --underline-offset: 0.1875rem;
+  --opacity-disabled: 0.5;
+  --button-border-color: transparent;
+
+  /* Общие размеры полей и кнопок */
+  --control-height: 3rem;
+  --button-padding: var(--space-2) var(--space-4);
+  --input-padding: var(--space-2) var(--space-3);
+
+  /* Размеры и раскладка страницы */
+  --page-min-width: 17.5rem;
+  --page-max-width: 75rem;
+  --page-min-height: 100svh;
+  --page-padding: var(--space-14) var(--space-8) var(--space-16);
+  --workspace-columns: minmax(17.5rem, 0.9fr) minmax(0, 1.6fr);
+  --settings-columns: minmax(0, 1fr);
+  --preview-columns: repeat(2, minmax(0, 1fr));
+
+  /* Размеры отдельных элементов */
+  --dropzone-min-height: 10rem;
+  --preview-empty-min-height: 15rem;
+  --preview-aspect-ratio: 4 / 3;
+  --preview-download-width: auto;
+  --message-min-height: 1.5em;
+
+  --visually-hidden-size: 1px;
+  --visually-hidden-clip: inset(50%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #b4aebd;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #47434f;
+    --surface: #202129;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --action: #c084fc;
+    --action-hover: #d8b4fe;
+    --action-text: #22102e;
+    --error: #ffb4ab;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --workspace-columns: minmax(0, 1fr);
+    --settings-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --page-padding: var(--space-8) var(--space-5) var(--space-10);
+    --settings-columns: minmax(0, 1fr);
+    --preview-columns: minmax(0, 1fr);
+    --preview-download-width: 100%;
+  }
+}

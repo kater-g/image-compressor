@@ -1,4 +1,7 @@
 .dropzone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   width: 100%;
 }
 
@@ -8,12 +11,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
-  min-height: 160px;
-  padding: 24px;
-  border: 2px dashed var(--text);
-  border-radius: 8px;
+  min-height: var(--dropzone-min-height);
+  padding: var(--space-6);
+  border: var(--border-width-strong) dashed var(--text);
+  border-radius: var(--radius-control);
   background: var(--bg);
   color: var(--text-h);
   font: inherit;
@@ -22,31 +25,35 @@
 }
 
 .dropzone__button:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 4px;
+  outline: var(--focus-width) solid var(--accent);
+  outline-offset: var(--focus-offset);
 }
 
 .dropzone__title {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .dropzone__action {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: var(--underline-offset);
+}
+
+.dropzone__messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .dropzone__hint {
-  margin: 12px 0 0;
   color: var(--text);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .dropzone__error {
-  min-height: 1.5em;
-  margin: 8px 0 0;
+  min-height: var(--message-min-height);
   color: var(--text-h);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .dropzone--over .dropzone__button {
@@ -56,7 +63,7 @@
 }
 
 .dropzone--disabled .dropzone__button {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
   pointer-events: none;
 }
