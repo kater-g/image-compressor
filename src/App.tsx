@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { CompressionSettings } from "./components/CompressionSettings/CompressionSettings";
 import { Dropzone } from "./components/Dropzone/Dropzone";
 import { Preview } from "./components/Preview/Preview";
 import { compressImage, CompressImageError } from "./lib/compressImage";
@@ -140,67 +141,12 @@ export default function App() {
             </p>
           )}
 
-          <fieldset className="app__settings">
-            <legend className="app__legend">Параметры изображения</legend>
-            <div className="app__controls">
-              <div className="app__field">
-                <label className="app__label" htmlFor="output-format">
-                  Формат результата
-                </label>
-                <select
-                  id="output-format"
-                  className="app__select"
-                  value={format}
-                  aria-describedby="format-hint"
-                  onChange={(event) =>
-                    handleFormatChange(
-                      event.currentTarget.value as OutputFormat,
-                    )
-                  }
-                >
-                  <option value="image/webp">WebP</option>
-                  <option value="image/jpeg">JPEG</option>
-                  <option value="image/png">PNG</option>
-                </select>
-                <p id="format-hint" className="app__hint">
-                  {format === "image/jpeg"
-                    ? "Прозрачные области станут белыми."
-                    : format === "image/png"
-                      ? "Без потерь. Вес файла может увеличиться."
-                      : "Поддерживает прозрачный фон."}
-                </p>
-              </div>
-
-              {format !== "image/png" && (
-                <div className="app__field">
-                  <label className="app__label" htmlFor="image-quality">
-                    Качество: {quality}%
-                  </label>
-                  <input
-                    id="image-quality"
-                    className="app__range"
-                    type="range"
-                    min="10"
-                    max="100"
-                    step="1"
-                    value={quality}
-                    aria-valuetext={`${quality}%`}
-                    aria-describedby="quality-hint"
-                    onChange={(event) =>
-                      handleQualityChange(event.currentTarget.valueAsNumber)
-                    }
-                  />
-                  <p id="quality-hint" className="app__hint">
-                    Ниже качество — обычно меньше файл.
-                  </p>
-                </div>
-              )}
-            </div>
-            <p className="app__hint">
-              Изображение впишется в 1920 × 1920 пикселей без увеличения.
-              Анимация не сохраняется.
-            </p>
-          </fieldset>
+          <CompressionSettings
+            format={format}
+            quality={quality}
+            onFormatChange={handleFormatChange}
+            onQualityChange={handleQualityChange}
+          />
 
           <p className="app__status" role="status">
             {isProcessing
