@@ -1,75 +1,47 @@
-# React + TypeScript + Vite
+# Image Compressor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Веб-приложение для сжатия и конвертации изображений. Файлы обрабатываются в браузере и не отправляются на сервер.
 
-Currently, two official plugins are available:
+**[Открыть приложение](https://kater-g.github.io/image-compressor/)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Возможности
 
-## React Compiler
+- Загрузка и конвертация между JPEG, PNG и WebP.
+- Настройка качества JPEG и WebP от 10 до 100%.
+- Уменьшение изображения до границ 1920 × 1920 px с сохранением пропорций, без увеличения исходного разрешения.
+- Автоматический предпросмотр оригинала и результата с реальным размером файлов.
+- Обновление результата при изменении формата или качества.
+- Скачивание готового изображения.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Форматы и ограничения
 
-## Expanding the ESLint configuration
+| Формат результата | Прозрачность | Настройка качества |
+| --- | --- | --- |
+| JPEG | Прозрачные области заменяются белым фоном | Да |
+| PNG | Сохраняется | Нет |
+| WebP | Сохраняется | Да |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Обрабатывается одно изображение за раз.
+- Анимация не сохраняется: при перекодировании анимированного WebP получается статичный кадр.
+- Для PNG параметр качества не применяется.
+- Смена формата может увеличить вес файла. Конвертация JPEG в PNG не восстанавливает качество, потерянное при предыдущем сжатии.
+- Если формат и разрешение не менялись, а новый файл не стал меньше, приложение возвращает оригинал.
+- Доступность декодирования и кодирования зависит от браузера. Если обработка невозможна, приложение показывает ошибку и позволяет повторить попытку.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Стек
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- React и TypeScript
+- Vite
+- CSS Modules, БЭМ и общие CSS-переменные
+- `createImageBitmap` и Canvas API для обработки изображений
+- ESLint
+- GitHub Actions и GitHub Pages
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Команды
 
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+| Команда | Назначение |
+| --- | --- |
+| `npm run dev` | Запуск сервера разработки |
+| `npm run lint` | Проверка кода через ESLint |
+| `npm run build` | Проверка TypeScript и production-сборка в `dist/` |
+| `npm run preview` | Локальный просмотр готовой сборки |
